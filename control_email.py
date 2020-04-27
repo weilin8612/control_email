@@ -2,7 +2,6 @@ import smtplib
 from email.mime.text import MIMEText
 import logging
 from email.mime.multipart import MIMEMultipart
-from email.mime.base import MIMEBase
 from email.header import Header
 
 class control_email:
@@ -43,19 +42,21 @@ class control_email:
             Subject = "无主题"
         message = MIMEText(text, "plain", "utf-8")
         #填写信息
-        message["From"] = Header("从weilin发出<{}>".format(From_email), "utf-8")
-        message["To"] = Header("去weilin的地方<{}>".format(To_email), "utf-8")
+        message["From"] = Header("<{}>".format(From_email), "utf-8")
+        message["To"] = Header("<{}>".format(To_email), "utf-8")
         message["Subject"] = Header(Subject, "utf-8")
 
-
-        #构建邮件服务器实例，第一个参数是bytes类型
-        srv = smtplib.SMTP_SSL(self.sever.encode(), 465)
-        #登陆邮箱
-        srv.login(self.user, self.passwd)
-        #发送邮件，第三个参数是str类型
-        srv.sendmail(user, [to_addr], message.as_string())
-        srv.quit()
-        logging.info("发送邮件成功")
+        try:
+            #构建邮件服务器实例，第一个参数是bytes类型
+            srv = smtplib.SMTP_SSL(self.sever.encode(), 465)
+            #登陆邮箱
+            srv.login(self.user, self.passwd)
+            #发送邮件，第三个参数是str类型
+            srv.sendmail(user, [to_addr], message.as_string())
+            srv.quit()
+            logging.info("发送邮件成功")
+        except Exception as e:
+            logging.warning("发送邮件失败")
 
     def send_mul_email(self, text, filename, to_addr):
         '''
@@ -82,15 +83,17 @@ class control_email:
             m["Content-Disposition"] = "attachment; filename={}".format(filename)
             #添加到邮件中
             mail_mul.attach(m)
-            # 构建邮件服务器实例，第一个参数是bytes类型
-            srv = smtplib.SMTP_SSL(self.sever.encode(), 465)
-            # 登陆邮箱
-            srv.login(self.user, self.passwd)
-            # 发送邮件，第三个参数是str类型
-            srv.sendmail(user, [to_addr], mail_mul.as_string())
-            srv.quit()
-            logging.info("发送邮件成功")
-
+            try:
+                # 构建邮件服务器实例，第一个参数是bytes类型
+                srv = smtplib.SMTP_SSL(self.sever.encode(), 465)
+                # 登陆邮箱
+                srv.login(self.user, self.passwd)
+                # 发送邮件，第三个参数是str类型
+                srv.sendmail(user, [to_addr], mail_mul.as_string())
+                srv.quit()
+                logging.info("发送邮件成功")
+            except Exception as e:
+                logging.warning("邮件发送失败")
 
     def receive_email(self):
         pass
@@ -100,7 +103,7 @@ if __name__ == "__main__":
     logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
     text = "I love you "
     user = "398344250@qq.com"
-    passwd = 'xxx'
+    passwd = "验证码"
 
     ser = control_email(user, passwd)
-    ser.send_alone_email(text, user, From_email="我是与环水", To_email="woaer", Subject="okokok")
+    ser.send_alone_email(text, user, From_email=user, To_email=user, Subject="okokok")
